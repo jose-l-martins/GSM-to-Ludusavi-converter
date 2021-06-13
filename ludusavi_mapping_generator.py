@@ -1,5 +1,6 @@
 # ludusavi_mapping.py
 import os
+import re
 import py7zr
 import yaml
 import xml.etree.ElementTree as ET
@@ -75,8 +76,9 @@ def create_ludusavi_mapping(gsm_file: str, xml_string: str, output_yaml_file_pat
     with open(file_path, 'r') as file:
         content = file.read()
 
-    # Remove all ' characters from the content
-    modified_content = content.replace("'", "")
+    # Remove all ' characters from the content, except those that are in the middle of a word, to keep titles like e.g. "Assassin's Creed"
+    modified_content = re.sub(r"(?<!\w)'(?!'\w)", "", content)
+    modified_content = re.sub(r"'(?=[:])", '', modified_content)
 
     #Replace all the backslasses (\) with forward slashes (/), in paths
     modified_content = modified_content.replace('\\', '/')
