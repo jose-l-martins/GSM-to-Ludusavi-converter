@@ -10,7 +10,7 @@ def compute_sha1(data):
     return sha1.hexdigest()
 
 
-def extract_and_check_files_in_7z(archive_path, inner_folder_path):
+def extract_and_check_files_in_gsba(archive_path, inner_folder_path):
     results = {}
     
     # Check if the file ends in .gsba
