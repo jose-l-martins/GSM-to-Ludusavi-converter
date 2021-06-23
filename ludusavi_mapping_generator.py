@@ -1,12 +1,11 @@
 # ludusavi_mapping.py
 import os
 import re
-import py7zr
 import yaml
 import xml.etree.ElementTree as ET
 from date_formatting import convert_filename_to_hybrid_timestamp, convert_filename_to_iso_timestamp
 from special_path_resolver import resolve_special_path
-from file_operations import extract_and_check_files_in_7z
+from file_operations import extract_and_check_files_in_gsba
 
 
 
@@ -48,9 +47,9 @@ def create_ludusavi_mapping(gsm_file: str, xml_string: str, output_yaml_file_pat
         files = directory.find("FileList").findall("File")
         all_file_names = [file.text for file in files]
 
-        with py7zr.SevenZipFile(gsm_file, mode='r') as seven_zip_archive:
+        if gsm_file.endswith(".gsba"):
             inner_folder_index = directories.index(directory) + 1
-            results_dict = extract_and_check_files_in_7z(gsm_file, str(inner_folder_index)+ "/")
+            results_dict = extract_and_check_files_in_gsba(gsm_file, str(inner_folder_index)+ "/")
 
             for current_file_name in all_file_names:
                 current_file_path = full_folder_path + "\\" + current_file_name
