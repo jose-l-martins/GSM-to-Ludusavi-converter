@@ -10,7 +10,7 @@ def compute_sha1(data):
     return sha1.hexdigest()
 
 
-def extract_and_check_files_in_gsba(archive_path, inner_folder_path):
+def extract_and_check_files_in_gsba(archive_path: str, inner_folder_path: str):
     results = {}
     
     # Check if the file ends in .gsba
@@ -39,7 +39,7 @@ def extract_and_check_files_in_gsba(archive_path, inner_folder_path):
     elif zipfile.is_zipfile(archive_path):
         with zipfile.ZipFile(archive_path, 'r') as zip_ref:
             extracted_files = zip_ref.namelist()
-            #print(extracted_files)
+
             # Process the extracted data further or store it for later use
             for file_path in extracted_files:
                 # Skip directories and process files within the inner folder
