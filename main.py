@@ -34,8 +34,8 @@ def main():
     parser = argparse.ArgumentParser(description='Process GameSave Manager backup files and generate Ludusavi mappings.')
     parser.add_argument('folder_path', type=str, help='Path to the folder containing GSM backup files')
     parser.add_argument('output_yaml_file_path', type=str, help='Path to the output folder for Ludusavi YAML files')
+    
     args = parser.parse_args()
-
 
     try:
         process_gsm_folder(args.folder_path, args.output_yaml_file_path)

@@ -1,12 +1,26 @@
 # file_operations.py
+from typing import Union
 import hashlib
 import py7zr
 import zipfile
 
 
-def compute_sha1(data):
+def compute_sha1(data_or_file: Union[bytes, str]) -> str:
     sha1 = hashlib.sha1()
-    sha1.update(data)
+
+    if isinstance(data_or_file, str):  # Check if the input is a file path
+        # Open the file in binary mode
+        with open(data_or_file, "rb") as file:
+            # Read the file in chunks of 4096 bytes
+            chunk = file.read(4096)
+            
+            # Loop until there are no more chunks to read
+            while chunk:
+                sha1.update(chunk)  # Update the SHA-1 hash with the current chunk
+                chunk = file.read(4096)  # Read the next chunk
+    else:  # Assume the input is already data
+        sha1.update(data_or_file)  # Update the SHA-1 hash with the provided data
+    
     return sha1.hexdigest()
 
 
@@ -35,6 +49,8 @@ def extract_and_check_files_in_gsba(archive_path: str, inner_folder_path: str):
                         'hash': sha1_hash,
                         'size': uncompressed_size
                     }
+
+                    
     # Check if its a .zip file                
     elif zipfile.is_zipfile(archive_path):
         with zipfile.ZipFile(archive_path, 'r') as zip_ref:

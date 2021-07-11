@@ -4,12 +4,12 @@ import re
 import yaml
 import xml.etree.ElementTree as ET
 from date_formatting import convert_filename_to_hybrid_timestamp, convert_filename_to_iso_timestamp
+from registry_processor import convert_reg_to_yaml
 from special_path_resolver import resolve_special_path
 from file_operations import extract_and_check_files_in_gsba
 
 
-
-def create_ludusavi_mapping(gsm_file: str, xml_string: str, output_yaml_file_path: str):
+def create_ludusavi_mapping(gsm_file: str, xml_string: str, output_yaml_folder_path: str, ludusavi_in_zip: bool = False):
     ludusavi_mapping = {}
     
     # Parse the XML string
@@ -23,7 +23,10 @@ def create_ludusavi_mapping(gsm_file: str, xml_string: str, output_yaml_file_pat
                 
     ludusavi_mapping["drives"] = {}
     ludusavi_mapping["backups"] = {}
-    ludusavi_mapping["backups"]["- name"] = "backup-{}.zip".format(convert_filename_to_iso_timestamp(gsm_file))
+    if ludusavi_in_zip:
+        ludusavi_mapping["backups"]["- name"] = "backup-{}.zip".format(convert_filename_to_iso_timestamp(gsm_file))
+    else:
+        ludusavi_mapping["backups"]["- name"] = "\".\""
     ludusavi_mapping["backups"]["when"] = "\"" + convert_filename_to_hybrid_timestamp(gsm_file, True) + "\""
     ludusavi_mapping["backups"]["os"] = "windows"
     ludusavi_mapping["backups"]["files"] = {}
@@ -50,6 +53,12 @@ def create_ludusavi_mapping(gsm_file: str, xml_string: str, output_yaml_file_pat
         if gsm_file.endswith(".gsba"):
             inner_folder_index = directories.index(directory) + 1
             results_dict = extract_and_check_files_in_gsba(gsm_file, str(inner_folder_index)+ "/")
+            reg_file_hash = convert_reg_to_yaml(gsm_file, output_yaml_folder_path)
+            
+            if reg_file_hash is not None:
+                ludusavi_mapping["backups"]["registry"] = {"hash": reg_file_hash}   
+            else:
+                ludusavi_mapping["backups"]["registry"] = {"hash": "~"}
 
             for current_file_name in all_file_names:
                 current_file_path = full_folder_path + "\\" + current_file_name
@@ -58,18 +67,17 @@ def create_ludusavi_mapping(gsm_file: str, xml_string: str, output_yaml_file_pat
                 size_value = results_dict[(str(inner_folder_index)+ "\\" + current_file_name).replace("\\", "/")]["size"]
                 ludusavi_mapping["backups"]["files"][key] = {"hash": hash_value, "size": size_value}
             
-    ludusavi_mapping["backups"]["registry"] = {"hash": "~"}
     ludusavi_mapping["backups"]["children"] = []
     data = ludusavi_mapping
 
     # Dump the dictionary to a YAML file
-    file_path = os.path.join(output_yaml_file_path, "mapping.yaml")
+    file_path = os.path.join(output_yaml_folder_path, "mapping.yaml")
     try:
         with open(file_path, "w") as file:
             # Dump the dictionary to a YAML file without quotes around string values
             yaml.dump(data, file, sort_keys=False, explicit_start=True, default_style='',  default_flow_style=False, allow_unicode=True, encoding='utf-8') #indent=4 (maybe)
     except FileExistsError:
-        print("File already exists. Avoided overwriting.")
+        print("ERROR: File already exists. Avoided overwriting.")
         
     # Read the content of the YAML file
     with open(file_path, 'r') as file:

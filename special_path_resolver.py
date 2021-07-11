@@ -19,7 +19,6 @@ def get_steam_installation_path():
         # 32-bit registry path
         key_32bit = r"SOFTWARE\Valve\Steam"
         with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, key_32bit) as reg_key:
-            print(reg_key)
             try:
                 value, _ = winreg.QueryValueEx(reg_key, "InstallPath")
                 steam_path = os.path.join(value, "steam.exe")
@@ -29,7 +28,7 @@ def get_steam_installation_path():
 
 
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"ERROR: {e}")
         return None
 
 
@@ -55,10 +54,8 @@ def resolve_special_path(special_path):
         "DOWNLOADS": userpaths.get_downloads(),
         "DESKTOP": userpaths.get_desktop(),
         "DOCUMENTS": userpaths.get_my_documents(),
-        "STEAM_CLOUD": get_steam_installation_path()
+        "STEAM_CLOUD": get_steam_installation_path(),
+        "SAVED_GAMES": os.path.join(os.environ.get('USERPROFILE'), "Saved Games")
     }
 
     return special_paths.get(special_path)
-
-
-print(resolve_special_path("%LOCALAPPDATA%"))
